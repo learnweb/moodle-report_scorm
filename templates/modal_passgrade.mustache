@@ -1,0 +1,19 @@
+{{< core/modal }}
+    {{$title}}{{#str}} edit, scormreport_heatmap {{/str}}{{/title}}
+    {{$body}}
+        <div class="container">
+            <form>
+                <div class="form-group row">
+                    <label for="inputpercentage" class="col-sm-2 col-form-label">{{#str}} passinggrade, scormreport_heatmap {{/str}}</label>
+                    <div class="col-sm-10">
+                        <input type="number" class="form-control" id="inputpercentage" placeholder="{{#str}} 50 {{/str}}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    {{/body}}
+    {{$footer}}
+        <button type="button" class="btn btn-primary" data-action="login">{{#str}} save {{/str}}</button>
+        <button type="button" class="btn btn-secondary" data-action="cancel">{{#str}} cancel {{/str}}</button>
+    {{/footer}}
+{{/ core/modal }}

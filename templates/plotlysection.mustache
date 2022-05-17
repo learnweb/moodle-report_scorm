@@ -1,0 +1,15 @@
+<div id="scormreport_heatmap_sectionwrapper_{{id}}">
+    <div class="scormreport_heatmap_title">
+        <h2 title="{{id}}">{{title}}</h2>
+        <span class="scormreport_heatmap_rightside">{{#str}}answers, scormreport_heatmap{{/str}}: {{answers}}</span>
+    </div>
+    <div id="scormreport_heatmap_section_{{id}}" class="scormreport_heatmap_plotly_section">
+        {{#percentage}}
+        {{<scormreport_heatmap/percentagecircle}}
+            {{$text}}{{correct}}/{{total}}{{/text}}
+            {{$percentage}}{{percentage}}{{/percentage}}
+        {{/scormreport_heatmap/percentagecircle}}
+        {{/percentage}}
+
+    </div>
+</div>

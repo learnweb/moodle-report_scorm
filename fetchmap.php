@@ -14,17 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$string['pluginname'] = "Punkteverteilungskarte";
-$string['report_scorm'] = "SCORM Auswertung";
-$string['report'] = "Auswertung";
-$string['report_for'] = "Auswertung für ";
-$string['average'] = "Durchschnitt";
-$string['best'] = "Bester Schnitt";
-$string['worst'] = "Schlechtester Schnitt";
-$string['question'] = "Frage";
-$string['answers'] = "Antworten";
-$string['averagescore'] = "Durschnittliche Punktzahl";
-$string['passing'] = "Momentane Bestehensquote";
-$string['edit'] = "Bestehensgrenzen anpassen";
-$string['passinggrade'] = "Bestehensgrenze";
-
+require_once(__DIR__ . '/../../../../config.php');
+require_login();
+global $OUTPUT;
+$scormid = required_param('scormid', PARAM_INT);
+$numofsections = required_param('numofsections', PARAM_INT);
+return $OUTPUT->render(\scormreport_heatmap\report::get_chart($scormid, $numofsections));

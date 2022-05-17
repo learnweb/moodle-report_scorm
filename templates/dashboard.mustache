@@ -1,0 +1,20 @@
+<h2>Dashboard</h2>
+<div class="scormreport_heatmap_dashboard_container">
+    <div id="scormreport_heatmap_averagecontainer" class="scormreport_heatmap_dashboard_container_inner">
+        {{<scormreport_heatmap/percentagecircle}}
+            {{$text}}{{averagepercentage}}%{{/text}}
+            {{$percentage}}{{roundedaverage}}{{/percentage}}
+        {{/scormreport_heatmap/percentagecircle}}
+        <span class="scormreport_heatmap_dashboard_description">{{#str}} averagescore, scormreport_heatmap{{/str}}</span>
+    </div>
+    <div id="scormreport_heatmap_passingcontainer" class="scormreport_heatmap_dashboard_container_inner">
+        <div id="scormreport_heatmap_settings">
+            {{#pix}}t/edit, core, {{#str}}edit, scormreport_heatmap{{/str}}{{/pix}}
+        </div>
+        {{<scormreport_heatmap/percentagecircle}}
+            {{$text}}Loading{{/text}}
+            {{$percentage}}0{{/percentage}}
+        {{/scormreport_heatmap/percentagecircle}}
+        <span class="scormreport_heatmap_dashboard_description">{{#str}} passing, scormreport_heatmap{{/str}}</span>
+    </div>
+</div>

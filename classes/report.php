@@ -24,6 +24,7 @@
 namespace scormreport_heatmap;
 
 defined('MOODLE_INTERNAL') || die();
+require_once("$CFG->dirroot/mod/scorm/locallib.php");
 
 use context_module;
 use core\chart_series;
@@ -40,6 +41,8 @@ use core\chart_series;
 class report extends \mod_scorm\report {
 
     const PLUGINNAME = 'scormreport_heatmap';
+    const TOKEN_CORRECT = 'token_correct';
+    const TOKEN_FALSE = 'token_false';
 
     public static function parse_percent_truefalse ($data) {
         return ((int) $data['result'] == 'correct') * 100;
@@ -65,6 +68,10 @@ class report extends \mod_scorm\report {
         return max($options);
     }
 
+    public static function parse_percentage_common($data) {
+        return $data['result'] === 'correct' ? 100 : 0;
+    }
+
     public static function parse_data_to_percent($data) {
         $parseddata = array();
         foreach ($data as $uid => $attempt) {
@@ -72,50 +79,13 @@ class report extends \mod_scorm\report {
             foreach ($attempt as $key => $questiondata) {
                 $type = str_replace('-', '', $questiondata['type']);
                 $callbackname = 'parse_percent_' . $type;
-                if (method_exists(self::class, $callbackname)) {
-                    $parsed = self::$callbackname($questiondata);
+                // if (method_exists(self::class, $callbackname)) {
+                    $parsed = self::parse_percentage_common($questiondata);
                     $parseddata[$uid][$key] = $parsed;
-                }
+                // }
             }
         }
         return $parseddata;
-    }
-
-    public static function get_data($scormid) {
-        global $DB;
-        $attemptbased = false;
-        $rawdata = $DB->get_records('scorm_scoes_track', array('scormid' => $scormid), "", 'id, userid, attempt, element, value');
-        $refineddata = array();
-        foreach ($rawdata as $key => $value) {
-            if ($attemptbased) {
-                $attemptid = $value->userid . "-" . $value->attempt;
-            } else {
-                $attemptid = $value->userid;
-            }
-            if (!array_key_exists($attemptid, $refineddata)) {
-                $refineddata[$attemptid] = array();
-            }
-            $scormvalue = $value->value;
-            $element = $value->element;
-            $match = array();
-            if (preg_match('/cmi\.interactions_([0-9]*)\.(.*)/', $element, $match)) {
-                $questionno = $match[1];
-                $newkey = $match[2];
-                if (!array_key_exists($questionno, $refineddata[$attemptid]) or !is_array($refineddata[$attemptid][$questionno])) {
-                    $refineddata[$attemptid][$questionno] = array();
-                }
-                $responses = array();
-                if (preg_match('/correct_responses_[0-9]*\.pattern/', $newkey, $responses)) {
-                    if (!array_key_exists('correct_responses', $refineddata[$attemptid][$questionno])) {
-                        $refineddata[$attemptid][$questionno]['correct_responses'] = array();
-                    }
-                    array_push($refineddata[$attemptid][$questionno]['correct_responses'], $scormvalue);
-                } else {
-                    $refineddata[$attemptid][$questionno][$newkey] = $scormvalue;
-                }
-            }
-        }
-        return $refineddata;
     }
 
     public static function get_average($data) {
@@ -210,6 +180,224 @@ class report extends \mod_scorm\report {
         return $chart;
     }
 
+    public static function get_all_users ($scormid) {
+        global $DB;
+        $sql = "SELECT DISTINCT userid FROM {scorm_scoes_track} WHERE scormid = ? ORDER BY userid";
+        $useridrecords = $DB->get_records_sql($sql, array($scormid));
+        $userids = [];
+        foreach ($useridrecords as $useridobject) {
+            $userids[] = $useridobject->userid;
+        }
+        return $userids;
+    }
+
+    public static function get_best_attempt_for_user ($scormid, $userid) {
+        $attempts = [scorm_get_tracks($scormid, (int) $userid)];
+        $maxscore = null;
+        $bestattempt = null;
+        foreach ($attempts as $attempt) {
+            if (!$attempt || !property_exists($attempt, 'status') || $attempt->status !== 'completed') {
+                continue;
+            }
+            if ($maxscore === null || $maxscore < $attempt->score_raw) {
+                $bestattempt = $attempt;
+                $maxscore = $attempt->score_raw;
+            }
+        }
+        return $bestattempt;
+    }
+
+    private static function write_to_keychain(&$array, $keychain, $value, $operation) {
+        $key = array_shift($keychain);
+        if (count($keychain) === 0) {
+            if ($operation === "write") {
+                $array[$key] = $value;
+            } else if ($operation === "push") {
+                if (!array_key_exists($key, $array)) {
+                    $array[$key] = [];
+                }
+                $array[$key][] = $value;
+            }
+            return;
+        }
+        if (!array_key_exists($key, $array)) {
+            $array[$key] = [];
+        }
+        self::write_to_keychain($array[$key], $keychain, $value, $operation);
+    }
+
+    public static function get_user_scores ($scormid) {
+        $users = self::get_all_users($scormid);
+        $scores = [];
+        foreach ($users as $user) {
+            $attempt = self::get_best_attempt_for_user($scormid, $user);
+            if ($attempt && property_exists($attempt, 'score_raw')) {
+                $scores[] = $attempt->score_raw;
+            }
+        }
+        return $scores;
+    }
+
+    public static function get_user_interactions ($scormid) {
+        $users = self::get_all_users($scormid);
+        $questiondata = [];
+        foreach ($users as $user) {
+            $attempt = self::get_best_attempt_for_user($scormid, $user);
+            if (!$attempt) {
+                continue;
+            }
+            $interactiondata = [];
+            foreach ($attempt as $key => $value) {
+                $matches = [];
+                if (preg_match('/cmi\.interactions\.([0-9]*)(.*)/', $key, $matches)) {
+                    $key = $matches[1];
+                    // This is data for a specific question.
+                    if (!array_key_exists($key, $interactiondata)) {
+                        $interactiondata[$key] = [];
+                    }
+                    $keychain = explode('.', $matches[2]);
+                    if (count($keychain) <= 1) {
+                        continue;
+                    }
+                    array_shift($keychain);
+                    $array = &$interactiondata[$key];
+                    $val = $value;
+                    $operation = "write";
+                    self::write_to_keychain($array, $keychain, $val, $operation);
+                }
+            }
+            $questiondata[$user] = $interactiondata;
+        }
+        return $questiondata;
+    }
+
+    public static function refine_by_result ($data) {
+        $refineddata = [
+            'percentages' => [],
+            'displaytype' => "boolean"
+        ];
+        foreach ($data['result'] as $result) {
+            $refineddata['percentages'][] = ($result == 'correct') ? 1 : 0;
+        }
+        return $refineddata;
+    }
+
+    public static function refine_by_response ($data) {
+        $allanswers = [];
+        foreach ($data['learner_responses'] as $responses) {
+            if ($responses === self::TOKEN_CORRECT || $responses === self::TOKEN_FALSE) {
+                continue;
+            }
+            $allanswers = array_unique(array_merge($allanswers, $responses));
+        }
+        $refineddata = [
+            'percentages' => [],
+            'displaytype' => 'spectrum',
+        ];
+        $correctresponse = $data['correct_response'];
+        $allanswers = array_unique(array_merge($correctresponse, $allanswers));
+        foreach ($data['learner_responses'] as $responses) {
+            if ($responses == self::TOKEN_CORRECT) {
+                $percentage = 1;
+            } else if ($responses === self::TOKEN_FALSE) {
+                $percentage = 0;
+            } else {
+                $errors = count(array_merge(array_diff($responses, $correctresponse), array_diff($correctresponse, $responses)));
+                $percentage = 1 - ((double)$errors / (double)count($allanswers));
+            }
+            array_push($refineddata['percentages'], $percentage);
+        }
+        return $refineddata;
+    }
+
+    public static function refine_by_question ($userdata) {
+        $refineddata = [];
+        foreach ($userdata as $userinteractions) {
+            foreach ($userinteractions as $interaction) {
+                // For some reason SCORM developers decided it was a good idea to append every id with the attempt number.
+                // Reference: https://community.articulate.com/discussions/articulate-storyline/question-id-s-and-sequencing
+                $id = implode('_', explode('_', $interaction['id'], -2));
+                $type = $interaction['type'];
+                if (!array_key_exists($id, $refineddata)) {
+                    $refineddata[$id] = [
+                        'description' => array_key_exists('description', $interaction) ? $interaction['description'] : '',
+                        'id' => $id,
+                        'type' => $type,
+                        'correct_response' => array_key_exists('correct_responses', $interaction) ?
+                            explode('[,]', $interaction['correct_responses'][0]['pattern']) :
+                            null,
+                        'learner_responses' => [],
+                        'result' => [],
+                        'manual_refine' => false,
+                    ];
+                }
+                if ($refineddata[$id]['description'] === '' && array_key_exists('description', $interaction)) {
+                    $refineddata[$id]['description'] = $interaction['description'];
+                }
+                if (array_key_exists('learner_response', $interaction)) {
+                    $learnerresponse = explode('[,]', $interaction['learner_response']);
+                    $refineddata[$id]['manual_refine'] = true;
+                    array_push($refineddata[$id]['learner_responses'], $learnerresponse);
+                } else {
+                    $token = $interaction['result'] === "correct" ? self::TOKEN_CORRECT : self::TOKEN_FALSE;
+                    array_push($refineddata[$id]['learner_responses'], $token);
+                }
+                array_push($refineddata[$id]['result'], $interaction['result']);
+            }
+        }
+        return $refineddata;
+    }
+
+    public static function insert_percentage_data($data) {
+        $chartdata = [];
+        foreach ($data as $question) {
+            if (array_key_exists('learner_responses', $question) &&
+                array_key_exists('correct_response', $question) &&
+                $question['learner_responses'] && $question['correct_response'] && $question['manual_refine']) {
+                $refineddata = self::refine_by_response($question);
+            } else {
+                $refineddata = self::refine_by_result($question);
+            }
+            $refineddata['description'] = $question['description'];
+            $refineddata['id'] = $question['id'];
+            $refineddata['type'] = $question['type'];
+            $refineddata['total'] = count($question['result']);
+            $refineddata['correct'] = count(array_filter($question['result'], function($data) {
+                return $data === 'correct';
+            }));
+            $chartdata[] = $refineddata;
+        }
+        return $chartdata;
+    }
+
+    public static function prepare_plotly_data ($data) {
+        $plotlydata = [
+            'labels' => [],
+            'values' => []
+        ];
+        $x = 0;
+        foreach ($data as $question) {
+            if ($x > 1) {
+                break;
+            }
+            $x++;
+            $name = $question['id'];
+            foreach ($question['percentages'] as $percentage) {
+                array_push($plotlydata['labels'], $name);
+                array_push($plotlydata['values'], $percentage);
+            }
+        }
+        return $plotlydata;
+    }
+
+    public static function get_data($scormid) {
+        $questiondata = self::get_user_interactions($scormid);
+        $refdata = self::refine_by_question($questiondata);
+        $percentdata = self::insert_percentage_data($refdata);
+        $plotlydata = self::prepare_plotly_data($percentdata);
+        return $percentdata;
+    }
+
     /**
      * Displays the full report.
      *
@@ -221,10 +409,19 @@ class report extends \mod_scorm\report {
      */
     public function display($scorm, $cm, $course, $download) {
         global $DB, $OUTPUT, $PAGE;
-        $sectioncount = optional_param('sectioncount', 10, PARAM_INT);
+        /* $sectioncount = optional_param('sectioncount', 10, PARAM_INT);
         $chart = self::get_chart($scorm->id, $sectioncount);
         echo $OUTPUT->render($chart);
         echo $OUTPUT->render_from_template('scormreport_heatmap/precision_slider', array('scormid' => required_param('id', PARAM_INT)));
         $contextmodule = context_module::instance($cm->id);
+        */
+        // $chart = new \core\chart_bar();
+        // echo $OUTPUT->render($chart);
+        $userscores = self::get_user_scores($scorm->id);
+        $average = number_format(array_sum(array_filter($userscores)) / count($userscores), 2);
+        $roundedaverage = max(0, min(100, round($average)));
+        echo $OUTPUT->render_from_template('scormreport_heatmap/report', ['averagepercentage' => $average, 'roundedaverage' => $roundedaverage]);
+        $refineddata = self::get_data($scorm->id);
+        $PAGE->requires->js_call_amd('scormreport_heatmap/report_view', 'init', array($refineddata, $userscores));
     }
 }
