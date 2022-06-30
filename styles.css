@@ -80,6 +80,14 @@
     display: inline-flex;
 }
 
+.scormreport_heatmap_table_fixed {
+    table-layout: fixed;
+}
+
+.scormreport_heatmap_td_breaktext {
+    word-wrap:break-word;
+}
+
 
 /****************************************************************
  *

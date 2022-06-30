@@ -27,3 +27,4 @@ $string['averagescore'] = "Average score";
 $string['passing'] = "Projected passingquota";
 $string['edit'] = "Edit passing threshhold";
 $string['passinggrade'] = "Passing threshold";
+$string['norawscore'] = "Your SCORM Packet is not configured to support score_raw or there are no answers yet";

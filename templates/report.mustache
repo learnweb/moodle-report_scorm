@@ -1,6 +1,11 @@
 <script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
 <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
 <div>
-{{>scormreport_heatmap/dashboard}}
+    {{#showdashboard}}
+    {{>scormreport_heatmap/dashboard}}
+    {{/showdashboard}}
+    {{^showdashboard}}
+        {{#str}} norawscore, scormreport_heatmap {{/str}}
+    {{/showdashboard}}
 <div id="scormreport_heatmap_container"></div>
 </div>

@@ -1,10 +1,12 @@
 <div class="scormreport_heatmap_switch_wrapper">
     <input type="checkbox" id="{{id_prefix}}_switch" class="scormreport_heatmap_switch_input">
     <label for="{{id_prefix}}_switch" class="scormreport_heatmap_switch_label">{{title}}</label>
+    {{#answers}}
     <div id="{{id_prefix}}_rightside" class="scormreport_heatmap_rightside">
         {{#str}}answers, scormreport_heatmap{{/str}}: {{answers}}
         {{#str}}average, scormreport_heatmap{{/str}}: {{average}}%
     </div>
+    {{/answers}}
     <div id="{{id_prefix}}_hiddencontent" class="scormreport_heatmap_switched_text">
 
     </div>

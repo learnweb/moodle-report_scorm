@@ -27,4 +27,5 @@ $string['averagescore'] = "Durschnittliche Punktzahl";
 $string['passing'] = "Momentane Bestehensquote";
 $string['edit'] = "Bestehensgrenzen anpassen";
 $string['passinggrade'] = "Bestehensgrenze";
+$string['norawscore'] = "Ihr SCORM Paket hat keine Punkte gestpeichert, entweder sind noch keine Antworten vorhanden oder sie müssen ihr SCORM Paket konfigurieren um score_raw zu unterstützen".
 
