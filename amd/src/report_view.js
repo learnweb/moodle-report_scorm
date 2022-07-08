@@ -1,10 +1,11 @@
 import {exception as displayException} from 'core/notification';
 import Templates from 'core/templates';
-
-
+import $ from 'jquery';
 
 // A popular editor names questions SceneX_SlideY_QUESTIONTYPE.
-// Some other editors just group like SlideX_id.
+// Another editor names the questions like SlideX_id.
+// Notably the first will only use one question per slide while the second uses multiple.
+// Importantly, both prepend the quesitonname with a "group" name
 // This function groups questions based on their scene or slide.
 const group_by_scene = (scormdata) => {
     let scochartdata = {};
@@ -32,7 +33,7 @@ const group_by_scene = (scormdata) => {
                 groups[scenename].data.push(questiondata);
             }
         });
-        // Shows wrong ident, even tough ident is correct.
+        // Shows wrong ident, even tough ident is correct. possibly because of the nested lambdas.
         // @codingStandardsIgnoreStart
 
         // Now we build some statistics for those groups.
@@ -77,14 +78,22 @@ const add_single_question_unscored_default = (questiondata, appendidentifier) =>
         questiontext = questiondata.id;
     }
     let context = {
-        'lines': questiondata.learner_responses,
-        'title': questiontext,
-        'id': questiondata.id,
-        'answers': questiondata.total_answers,
+        title: questiontext,
+        id_prefix: `unscored_table_switch_${questiondata.id}`,
+        answers: questiondata.total_answers,
+        identlevel: 1
     };
-    Templates.renderForPromise('scormreport_heatmap/unscored_default_table', context).then(({html, js}) => {
-        // Create new table of all resposes
-        Templates.appendNodeContents(appendidentifier, html, js); // Append it to the current toggleable scene.
+    Templates.renderForPromise('scormreport_heatmap/collapsible_topic', context).then(({html, js}) => {
+        Templates.appendNodeContents(appendidentifier, html, js);
+        let context = {
+            'lines': questiondata.learner_responses,
+            'id': questiondata.id,
+        };
+        Templates.renderForPromise('scormreport_heatmap/unscored_default_table', context).then(({html}) => {
+            // Create new table of all resposes for some reason appendNodeContents does not work here.
+            $(`#unscored_table_switch_${questiondata.id}_hiddencontent`).html(html);
+            return true;
+        }).catch(ex => displayException(ex));
         return true;
     }).catch(ex => displayException(ex));
 };
@@ -195,7 +204,7 @@ const add_single_question_boolean = (questiondata, appendidentifier) => {
         'correct': correct,
         'total': total
     };
-    Templates.renderForPromise('scormreport_heatmap/plotlysection', context).then(
+    Templates.renderForPromise('scormreport_heatmap/scored_binary_section', context).then(
         ({html, js}) => {
             Templates.appendNodeContents(appendidentifier, html, js);
             return true;
@@ -206,30 +215,27 @@ const add_single_question_boolean = (questiondata, appendidentifier) => {
 // We differentiate values with binary true/false decisisons and those that lie on a spectrum.
 // If the spectrum includes only true and false values (100% and 0%) we treat it as a true/false decisison.
 const add_question = (questiondata, idprefix) => {
-    if (questiondata.displaytype === "spectrum" && questiondata.percentages.length > 0) {
-        let previous = questiondata.percentages[0];
-        var single_yesno_val = previous === 1 || previous === 0;
-        if (single_yesno_val) {
-            for (let percentage of questiondata.percentages) {
-                if (previous !== percentage) {
-                    single_yesno_val = false;
-                    break;
-                }
+    let onlyboolvals = false;
+    if (questiondata.displaytype === "manual_scored" && questiondata.percentages.length > 0) {
+        onlyboolvals = true;
+        for (let percentage of questiondata.percentages) {
+            if (percentage !== 0 && percentage !== 1) {
+                onlyboolvals = false;
+                break;
             }
         }
     }
     let appendidentifier = `#${idprefix}_hiddencontent`;
-    if (questiondata.displaytype === "manual_scored" && !single_yesno_val) {
-        add_single_question_plotly(questiondata, appendidentifier);
-    } else if (questiondata.displaytype === "result_scored") {
+    if (questiondata.displaytype === "result_scored" || onlyboolvals) {
         add_single_question_boolean(questiondata, appendidentifier);
+    } else if (questiondata.displaytype === "manual_scored") {
+        add_single_question_plotly(questiondata, appendidentifier);
     } else if (questiondata.displaytype === "numeric_unscored") {
         add_single_question_plotly_unscored_numeric(questiondata, appendidentifier);
     } else if (questiondata.displaytype === "default_unscored") {
         add_single_question_unscored_default(questiondata, appendidentifier);
     }
 };
-
 
 
 export const init = (questiondata) => {

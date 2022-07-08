@@ -32,3 +32,7 @@ Defines a very simple modal that allows to input a number and invoke a callback 
 Not all scos are the same there may also be 'informational' scos that do not contain any "lesson information" instead they hold metadata of the creating organization etc.
 While these 'scos' are found in the scorm->sco reference table and their id is returned when querying for scos belonging to a scorm packet they do not represent a 'real' scorm packet.  
 So while these are found in the sco table for an sco to hold any information about lessons it needs to have its type set to 'sco'.
+
+### Understanding the flow of this plugin
+To understand the flow of this Plugin it is recommended to start in the classes/report.php file. 
+Here you can find the display function that is invoked by Moodle.

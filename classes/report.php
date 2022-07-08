@@ -52,19 +52,30 @@ class report extends \mod_scorm\report {
      */
     public function display($scorm, $cm, $course, $download) {
         global $OUTPUT, $PAGE;
+        // Create a new dataprovider instance.
         $provider = new scormdata_provider($scorm->id);
+        // Retrieve user and questiondata from said instance.
+        // If you want to understand the flow of this plugin you should look  into those functions.
         $questiondata = $provider->get_sco_questiondata();
         $scoredata = $provider->get_sco_userscores();
+        // If there is no data available for all the questions in this SCORM packet
+        // ...either the SCORM packet is missconfigured or there are now answers yet.
+        // We want to avoid deviding by zero when trying to find the average in those scenarios.
         if (count($scoredata) == 0) {
             $average = 0;
             $showdashboard = 0;
         } else {
+            // Calculate the average score based on the scoredata provided.
             $average = number_format(array_sum(array_filter($scoredata)) / count($scoredata), 2);
             $showdashboard = 1;
         }
+        // To have the text fit inside the final html elements the average is rounded to two decimal points.
         $roundedaverage = max(0, min(100, round($average)));
+        // Render the dashboard. The dashboard displays average grade aswell as the projected passingquota.
         echo $OUTPUT->render_from_template('scormreport_heatmap/report', ['averagepercentage' => $average, 'roundedaverage' => $roundedaverage, 'showdashboard' => $showdashboard]);
+        // Load the javascript required to calculate new passingquotas based on new minnimum scores.
         $PAGE->requires->js_call_amd('scormreport_heatmap/dashboard_passingquota', 'init', array($scoredata));
+        // Load the javascript that injects the visualized results for the questions.
         $PAGE->requires->js_call_amd('scormreport_heatmap/report_view', 'init', array($questiondata));
     }
 }

@@ -29,6 +29,8 @@ class scormdata_provider {
 
     public function get_sco_questiondata () {
         $questiondata = [];
+        // Loop over all SCO's of this SCORM and return their questiondata in an array.
+        // For the difference between SCOs and SCORM see load_scos.
         foreach ($this->scos as $sco) {
             $questiondata[$sco->scoid]['questions'] = $sco->get_questiondata();
             $questiondata[$sco->scoid]['title'] = $sco->title;
@@ -38,6 +40,10 @@ class scormdata_provider {
 
     public function get_sco_userscores () {
         $scores = [];
+        // Loop over all SCO's in this SCORM and merge the scores that are provided.
+        // For the difference between SCOs and SCORM see load_scos.
+        // TODO: dont just merge but add up / find new average for scores from the same user across SCOs.
+        // TODO: find out if users are even identical across SCOs.
         foreach ($this->scos as $sco) {
             $scores = array_merge($scores, $sco->get_user_scores());
         }
@@ -53,7 +59,8 @@ class scormdata_provider {
             $scoid = $scodata->id;
             // SCO stands for sharable content object. In theory those are learning modules for a scorm.
             // However scorm also stores a bunch of metadata and nothing else in some of them.
-            // Therefore for a SCO to be an actual SCO one needs to check wether the SCO has its type set to SCO.
+            // These SCOS have the SCO type org.
+            // Therefore for a SCO to be an actual SCO one needs to check whether the SCO has its type set to SCO.
             if ($scodata->scormtype === 'sco') {
                 $this->scos[$scoid] = new scodata_provider($scoid, $scodata->title);
             }
@@ -83,13 +90,16 @@ class scodata_provider {
     }
 
     public function get_user_scores () {
+        // If scores are already present return them.
         if (!is_null($this->scores)) {
             return $this->scores;
         }
+        // If attempts have not been loaded yet, load them (follow this for flow).
         if (is_null($this->attempts)) {
             $this->load_user_attempts();
         }
         $scores = [];
+        // Loop over all attempts and push their score_raw property into the scores array.
         foreach ($this->attempts as $attempt) {
             if ($attempt && property_exists($attempt, 'score_raw')) {
                 $scores[] = $attempt->score_raw;
@@ -99,6 +109,7 @@ class scodata_provider {
     }
 
     public function get_questiondata () {
+        // If there is no questiondata yet, load it.
         if (is_null($this->questiondata)) {
             $this->load_questiondata();
             $this->infuse_questiondata_with_percentages();
@@ -113,6 +124,10 @@ class scodata_provider {
         return $this->interactions;
     }
 
+    // This function is inserting percentage data for questions.
+    // Since during the original developement of this plugin only scorm questions that had correct and wrong answers
+    // ... were considered this was developed as a core feature of the plugin.
+    // TODO move this to javascript so it can be enabled and disabled based on the scormpacket provided.
     public function infuse_questiondata_with_percentages() {
         if (is_null($this->questiondata)) {
             $this->load_questiondata();
@@ -120,36 +135,42 @@ class scodata_provider {
         foreach ($this->questiondata as &$question) {
             // There are questions that are not meant to be rated such as feedback questions.
             // A neutral result indicates that this question is not meant to be rated.
+            // If this is the case, the refinetype field will have an empty value.
             if (empty($question['refinetype'])) {
+                // If there are learnwer responses, we want to display the question regardless.
+                // Otherwise this means that there are only neutral results and no responses.
+                // In that case we have nothing to visualize for this question.
                 if ($question['learner_responses']) {
+                    $question['displaytype'] = 'numeric_unscored';
+                    // Check if all answers are numeric. If not set the displaytype to default.
                     foreach ($question['learner_responses'] as $responses) {
                         foreach ($responses as $response) {
                             if (!is_numeric($response)) {
                                 $question['displaytype'] = 'default_unscored';
-                                // Break both foreachs, yes this can be done with a variable
-                                // But why rob yourself of using a goto, it's one of the last legitimate usecases.
-                                goto breakfor;
+                                // Break both foreachs.
+                                break 2;
                             }
                         }
                     }
-                    $question['displaytype'] = 'numeric_unscored';
-                    breakfor:
                 }
             } else if (array_key_exists('learner_responses', $question) &&
                 array_key_exists('correct_response', $question) &&
                 $question['learner_responses'] &&
                 $question['correct_response'] &&
                 $question['refinetype'] === 'manual_scored') {
+                // If the question is set to be refined check if it fits the criteria to use a custom scoring pattern.
+                // The custom scoring pattern calculates the differences between correct response pattern and the actual ansers.
                 $percentages = $this->get_percentages_by_response($question);
                 $question['percentages'] = $percentages;
-                $question['displaytype'] = 'spectrum';
+                $question['displaytype'] = 'manual_scored';
             } else if ($question['refinetype'] === 'result_scored') {
-                $question['displaytype'] = 'boolean';
+                $question['displaytype'] = 'result_scored';
             }
         }
     }
 
     public function load_questiondata () {
+        // If there is no interactiondata loaded yet, load it.
         if (empty($this->interactions)) {
             $this->load_user_interactions();
         }
@@ -210,7 +231,7 @@ class scodata_provider {
                     $refineddata[$id]['learner_responses'][] = $learnerresponse;
                 }
                 // If there are also exists a correct response pattern set refinetype to be scored manually.
-                if (array_key_exists('learner_response', $interaction) and array_key_exists('correct_response', $interaction)) {
+                if (array_key_exists('learner_response', $interaction) and array_key_exists('correct_responses', $interaction)) {
                     if ($refineddata[$id]['refinetype'] !== 'manual_scored') {
                         $refineddata[$id]['refinetype'] = 'manual_scored';
                     }
@@ -225,7 +246,7 @@ class scodata_provider {
                     }
                     // If the result is not neutral set the question to be visualized with a scored approach.
                     if ($result !== self::TOKEN_NEUTRAL) {
-                        if ($refineddata[$id]['refinetype'] = '') {
+                        if ($refineddata[$id]['refinetype'] == '') {
                             $refineddata[$id]['refinetype'] = 'result_scored';
                         }
                     }
@@ -261,6 +282,7 @@ class scodata_provider {
          * ...
          * This function retrieves the interaction records from the cmi data and loads them into a more practical array structure.
          */
+        // If there are no attempts loaded yet, load them.
         if (empty($this->attempts)) {
             $this->load_user_attempts();
         }
@@ -312,14 +334,18 @@ class scodata_provider {
     }
 
     private function get_percentages_by_response ($data) {
+        // This function trys to give a better estimate of the answers "correctness" instead of only using passed/failed.
+        // It first trys to rebuild all possible answers.
+        // Then it check what answers were given and gives points for correctly given answers AND correctly NOT given answers.
+        // After that it devides the points by the amount of answers possible to get the percent of answers that were correct.
+        // So if a question had answers a, b, c, d with correct answers a, d and a student answered a, b it would score it 50%...
+        // ... because the student answered a amd c correctly but failed at b and d.
+
         // SCORM does not provide us with all answers that were possible to choose in multiple-choice questions.
         // However we can somewhat reconstruct them by looking at all the answers students gave. Given a large enough
         // ...studentcount that should be relatively accurate.
         $allanswers = [];
         foreach ($data['learner_responses'] as $responses) {
-            if ($responses === self::TOKEN_CORRECT || $responses === self::TOKEN_FALSE) {
-                continue;
-            }
             $allanswers = array_unique(array_merge($allanswers, $responses));
         }
         $percentages = [];
@@ -327,16 +353,10 @@ class scodata_provider {
         $correctresponse = $data['correct_response'];
         $allanswers = array_unique(array_merge($correctresponse, $allanswers));
         foreach ($data['learner_responses'] as $responses) {
-            if ($responses == self::TOKEN_CORRECT) {
-                $percentage = 1;
-            } else if ($responses === self::TOKEN_FALSE) {
-                $percentage = 0;
-            } else {
-                // If the response is not 'correct' or 'false' we simply look at all answers and wether they should've been checked or not.
-                // We can then calculate the amount of errors made and use that as our errorpercentile.
-                $errors = count(array_merge(array_diff($responses, $correctresponse), array_diff($correctresponse, $responses)));
-                $percentage = 1 - ((double)$errors / (double)count($allanswers));
-            }
+            // If the response is not 'correct' or 'false' we simply look at all answers and wether they should've been checked or not.
+            // We can then calculate the amount of errors made and use that as our errorpercentile.
+            $errors = count(array_merge(array_diff($responses, $correctresponse), array_diff($correctresponse, $responses)));
+            $percentage = 1 - ((double)$errors / (double)count($allanswers));
             $percentages[] = $percentage;
         }
         return $percentages;
@@ -344,28 +364,30 @@ class scodata_provider {
 
     private function load_all_users () {
         global $DB;
+        // Fetch the userids of this sco from the database.
         $sql = "SELECT DISTINCT userid FROM {scorm_scoes_track} WHERE scoid = ? ORDER BY userid";
-        $useridrecords = $DB->get_records_sql($sql, array($this->scoid));
-        $userids = [];
-        foreach ($useridrecords as $useridobject) {
-            $userids[] = $useridobject->userid;
-        }
-        $this->userids = $userids;
+        $this->userids = $DB->get_fieldset_sql($sql, array($this->scoid));
     }
 
     private function load_user_attempts() {
+        // If users aren't loaded yet, load userids into the $userids array.
         if (is_null($this->userids)) {
             $this->load_all_users();
         }
+        // Loop over users and get their best attempt (follow for flow).
         foreach ($this->userids as $userid) {
             $this->load_best_attempt_for_user($userid);
         }
     }
 
     private function load_best_attempt_for_user ($userid) {
+        // The function sorm_get_tracks returns all attempts a user has in this sco.
+        // This is called a track because it represents a single tracking instance.
+        // This function also takes care of SOME of the differences in labeling and reporting between SCORM versions.
         $attempts = [scorm_get_tracks($this->scoid, (int) $userid)];
         $maxscore = null;
         $bestattempt = null;
+        // Loop over all attempts of this user and find the one with the highest score among the completed attempts.
         foreach ($attempts as $attempt) {
             if (!$attempt || !property_exists($attempt, 'status') || $attempt->status !== 'completed') {
                 continue;
@@ -375,6 +397,7 @@ class scodata_provider {
                 $maxscore = $attempt->score_raw;
             }
         }
+        // If there are completed attempts push the best of them into the attempt array.
         if ($bestattempt) {
             $this->attempts[$userid] = $bestattempt;
         }
