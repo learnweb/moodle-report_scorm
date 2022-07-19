@@ -79,13 +79,13 @@ const add_single_question_unscored_default = (questiondata, appendidentifier, ed
         answers: questiondata.total_answers,
         identlevel: 1
     };
-    Templates.renderForPromise('scormreport_heatmap/collapsible_topic', context).then(({html, js}) => {
+    Templates.renderForPromise('scormreport_question/collapsible_topic', context).then(({html, js}) => {
         Templates.appendNodeContents(appendidentifier, html, js);
         let context = {
             'lines': questiondata.learner_responses,
             'id': questiondata.id,
         };
-        Templates.renderForPromise('scormreport_heatmap/unscored_default_table', context).then(({html}) => {
+        Templates.renderForPromise('scormreport_question/unscored_default_table', context).then(({html}) => {
             // Create new table of all resposes for some reason appendNodeContents does not work here.
             $(`#unscored_table_switch_${questiondata.id}_hiddencontent`).html(html);
             return true;
@@ -122,9 +122,9 @@ const add_single_question_plotly_unscored_numeric = (questiondata, appendidentif
         type: 'bar'
     }];
     let context = {'id': questiondata.id, title: questiontext, answers: questiondata.total_answers};
-    Templates.renderForPromise('scormreport_heatmap/plotlysection', context).then(({html, js}) => { // Ceate new plotly wrapper.
+    Templates.renderForPromise('scormreport_question/plotlysection', context).then(({html, js}) => { // Ceate new plotly wrapper.
         Templates.appendNodeContents(appendidentifier, html, js); // Append it to the current toggleable scene.
-        window.Plotly.newPlot('scormreport_heatmap_section_' + questiondata.id, data); // Add plotly graph.
+        window.Plotly.newPlot('scormreport_question_section_' + questiondata.id, data); // Add plotly graph.
         return true;
     }).catch(ex => displayException(ex));
 };
@@ -163,9 +163,9 @@ const add_single_question_plotly_scored_violin = (questiondata, appendidentifier
         violinmode: "overlay",
     };
     let context = {'id': questiondata.id, title: questiontext, answers: questiondata.total_answers};
-    Templates.renderForPromise('scormreport_heatmap/plotlysection', context).then(({html, js}) => { // Ceate new plotly wrapper.
+    Templates.renderForPromise('scormreport_question/plotlysection', context).then(({html, js}) => { // Ceate new plotly wrapper.
         Templates.appendNodeContents(appendidentifier, html, js); // Append it to the current toggleable scene.
-        window.Plotly.newPlot('scormreport_heatmap_section_' + questiondata.id, [singletrace], layout); // Add plotly graph.
+        window.Plotly.newPlot('scormreport_question_section_' + questiondata.id, [singletrace], layout); // Add plotly graph.
         return true;
     }).catch(ex => displayException(ex));
 };
@@ -187,7 +187,7 @@ const add_single_question_boolean = (questiondata, appendidentifier, editor) => 
         'correct': correct,
         'total': total
     };
-    Templates.renderForPromise('scormreport_heatmap/scored_binary_section', context).then(
+    Templates.renderForPromise('scormreport_question/scored_binary_section', context).then(
         ({html, js}) => {
             Templates.appendNodeContents(appendidentifier, html, js);
             return true;
@@ -265,17 +265,17 @@ const get_title_for_editor = {
 
 const init_editor_choser = (scormdata, predicted_editor) => {
     // Change the dropdown to have the predicted editor selected.
-    $('#scormreport_heatmap_choose_editor').val(predicted_editor);
+    $('#scormreport_question_choose_editor').val(predicted_editor);
     // Define onchange callback for the editor selection dropdown.
-    $('#scormreport_heatmap_choose_editor').change(() => {
-        let editor = $('#scormreport_heatmap_choose_editor').val().toLowerCase();
+    $('#scormreport_question_choose_editor').change(() => {
+        let editor = $('#scormreport_question_choose_editor').val().toLowerCase();
         if (!(editor in get_title_for_editor)) {
             editor = "default";
         }
         for (let sco of Object.values(scormdata)) {
             for (let question of Object.values(sco.questions)) {
                 // Set new title for questionsections (plotly and circle).
-                $(`#scormreport_heatmap_sectionwrapper_${question.id} > div > h2`).text(get_title_for_editor[editor](question));
+                $(`#scormreport_question_sectionwrapper_${question.id} > div > h2`).text(get_title_for_editor[editor](question));
                 // @codingStandardsIgnoreStart Coding standards doesn't like = without whitespaces.
                 // Also change the title for tables. (unscored non-numeric questions)
                 $(`label[for=unscored_table_switch_${question.id}_switch]`).text(get_title_for_editor[editor](question));
@@ -304,16 +304,16 @@ export const init = (questiondata) => {
         for (let section in sections.groups) {
             // Append a collapsible section with statistical information about the students' performance in this section.
             let sectiondata = sections.groups[section];
-            let idprefix = `scormreport_heatmap_${section}`;
+            let idprefix = `scormreport_question_${section}`;
             let context = {
                 'id_prefix': idprefix,
                 'title': section,
                 'answers': sectiondata.statistics.answers,
                 'average': (sectiondata.statistics.average * 100).toFixed(2),
             };
-            Templates.renderForPromise('scormreport_heatmap/collapsible_topic', context)
+            Templates.renderForPromise('scormreport_question/collapsible_topic', context)
                 .then(({html, js}) => {
-                    Templates.appendNodeContents('#scormreport_heatmap_container', html, js);
+                    Templates.appendNodeContents('#scormreport_question_container', html, js);
                     for (let questiondata of sectiondata.data) {
                         // Add the questiongraphs/visaulizers to the collapsible section.
                         add_question(questiondata, idprefix, editor);
@@ -327,24 +327,24 @@ export const init = (questiondata) => {
         for (let scoid of Object.keys(sections)) {
             let scodata = sections[scoid];
             let context = {
-                'id_prefix': `scormreport_heatmap_scosection${scoid}`,
+                'id_prefix': `scormreport_question_scosection${scoid}`,
                 'title': `${scodata.title}`,
             };
-            Templates.renderForPromise('scormreport_heatmap/collapsible_topic', context)
+            Templates.renderForPromise('scormreport_question/collapsible_topic', context)
                 .then(({html, js}) => {
-                    Templates.appendNodeContents('#scormreport_heatmap_container', html, js);
+                    Templates.appendNodeContents('#scormreport_question_container', html, js);
                     for (let section in scodata.groups) {
                         let sectiondata = scodata.groups[section];
-                        let idprefix = `scormreport_heatmap_${section}`;
+                        let idprefix = `scormreport_question_${section}`;
                         let context = {
                             'id_prefix': idprefix,
                             'title': section,
                             'answers': sectiondata.statistics.answers,
                             'average': (sectiondata.statistics.average * 100).toFixed(2),
                         };
-                        Templates.renderForPromise('scormreport_heatmap/collapsible_topic', context)
+                        Templates.renderForPromise('scormreport_question/collapsible_topic', context)
                             .then(({html, js}) => {
-                                Templates.appendNodeContents(`#scormreport_heatmap_scosection${scoid}_hiddencontent`, html, js);
+                                Templates.appendNodeContents(`#scormreport_question_scosection${scoid}_hiddencontent`, html, js);
                                 for (let questiondata of sectiondata.data) {
                                     add_question(questiondata, idprefix, editor);
                                 }

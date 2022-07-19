@@ -15,7 +15,7 @@ define(['jquery', 'core/notification', 'core/custom_interaction_events', 'core/m
             Modal.call(this, root);
         };
 
-        ModalPassgrade.TYPE = 'scormreport_heatmap-passgrade';
+        ModalPassgrade.TYPE = 'scormreport_question-passgrade';
         ModalPassgrade.prototype = Object.create(Modal.prototype);
         ModalPassgrade.prototype.constructor = ModalPassgrade;
         ModalPassgrade.prototype.savepressedcallback = (formdata) => { // eslint-disable-line
@@ -41,7 +41,7 @@ define(['jquery', 'core/notification', 'core/custom_interaction_events', 'core/m
         };
 
         if (!registered) {
-            ModalRegistry.register(ModalPassgrade.TYPE, ModalPassgrade, 'scormreport_heatmap/modal_passgrade');
+            ModalRegistry.register(ModalPassgrade.TYPE, ModalPassgrade, 'scormreport_question/modal_passgrade');
             registered = true;
         }
 

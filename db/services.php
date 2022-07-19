@@ -16,8 +16,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $services = array (
-    'scormreport_heatmap_interactive_elements' => array (
-        'functions' => array('scormreport_heatmap_fetchmap'),
+    'scormreport_question_interactive_elements' => array (
+        'functions' => array('scormreport_question_fetchmap'),
         'requirecapability' => '',
         'restricteduseres' => 0,
         'enabled' => 1,
@@ -26,11 +26,11 @@ $services = array (
     )
 );
 $functions = array (
-    'scormreport_heatmap_fetchmap' => array (
-        'classname' => 'scormreport_heatmap_external',
+    'scormreport_question_fetchmap' => array (
+        'classname' => 'scormreport_question_external',
         'methodname' => 'fetchmap',
-        'classpath' => 'mod/scorm/report/heatmap/externallib.php',
-        'description' => 'Fetch a heatmap with specific detail level',
+        'classpath' => 'mod/scorm/report/question/externallib.php',
+        'description' => 'Fetch a question with specific detail level',
         'type' => 'read',
         'ajax' => 'true',
         'capabilities' => ''

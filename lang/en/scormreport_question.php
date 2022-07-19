@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$string['pluginname'] = "Heatmap report";
+$string['pluginname'] = "question report";
 $string['report_scorm'] = "SCORM Report";
 $string['report'] = "Report";
 $string['report_for'] = "Report for ";

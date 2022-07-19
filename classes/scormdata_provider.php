@@ -13,7 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-namespace scormreport_heatmap;
+namespace scormreport_question;
 
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->dirroot/mod/scorm/locallib.php");

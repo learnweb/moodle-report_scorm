@@ -1,20 +1,20 @@
 <h2>Dashboard</h2>
-<div class="scormreport_heatmap_dashboard_container">
-    <div id="scormreport_heatmap_averagecontainer" class="scormreport_heatmap_dashboard_container_inner">
-        {{<scormreport_heatmap/percentagecircle}}
+<div class="scormreport_question_dashboard_container">
+    <div id="scormreport_question_averagecontainer" class="scormreport_question_dashboard_container_inner">
+        {{<scormreport_question/percentagecircle}}
             {{$text}}{{averagepercentage}}%{{/text}}
             {{$percentage}}{{roundedaverage}}{{/percentage}}
-        {{/scormreport_heatmap/percentagecircle}}
-        <span class="scormreport_heatmap_dashboard_description">{{#str}} averagescore, scormreport_heatmap{{/str}}</span>
+        {{/scormreport_question/percentagecircle}}
+        <span class="scormreport_question_dashboard_description">{{#str}} averagescore, scormreport_question{{/str}}</span>
     </div>
-    <div id="scormreport_heatmap_passingcontainer" class="scormreport_heatmap_dashboard_container_inner">
-        <div id="scormreport_heatmap_settings">
-            {{#pix}}t/edit, core, {{#str}}edit, scormreport_heatmap{{/str}}{{/pix}}
+    <div id="scormreport_question_passingcontainer" class="scormreport_question_dashboard_container_inner">
+        <div id="scormreport_question_settings">
+            {{#pix}}t/edit, core, {{#str}}edit, scormreport_question{{/str}}{{/pix}}
         </div>
-        {{<scormreport_heatmap/percentagecircle}}
+        {{<scormreport_question/percentagecircle}}
             {{$text}}Loading{{/text}}
             {{$percentage}}0{{/percentage}}
-        {{/scormreport_heatmap/percentagecircle}}
-        <span class="scormreport_heatmap_dashboard_description">{{#str}} passing, scormreport_heatmap{{/str}}</span>
+        {{/scormreport_question/percentagecircle}}
+        <span class="scormreport_question_dashboard_description">{{#str}} passing, scormreport_question{{/str}}</span>
     </div>
 </div>

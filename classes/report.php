@@ -14,27 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * Core Report class of heatmap reporting plugin
+ * Core Report class of question reporting plugin
  *
- * @package    scormreport_heatmap
+ * @package    scormreport_question
  * @copyright  2021 Robin Tschudi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace scormreport_heatmap;
+namespace scormreport_question;
 
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->dirroot/mod/scorm/locallib.php");
-require_once("$CFG->dirroot/mod/scorm/report/heatmap/classes/scormdata_provider.php");
+require_once("$CFG->dirroot/mod/scorm/report/question/classes/scormdata_provider.php");
 
 use context_module;
 use core\chart_series;
 
 
 /**
- * Main class to control the heatmap reporting
+ * Main class to control the question reporting
  *
- * @package    scormreport_heatmap
+ * @package    scormreport_question
  * @copyright  2021 Robin Tschudi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -72,10 +72,10 @@ class report extends \mod_scorm\report {
         // To have the text fit inside the final html elements the average is rounded to two decimal points.
         $roundedaverage = max(0, min(100, round($average)));
         // Render the dashboard. The dashboard displays average grade aswell as the projected passingquota.
-        echo $OUTPUT->render_from_template('scormreport_heatmap/report', ['averagepercentage' => $average, 'roundedaverage' => $roundedaverage, 'showdashboard' => $showdashboard]);
+        echo $OUTPUT->render_from_template('scormreport_question/report', ['averagepercentage' => $average, 'roundedaverage' => $roundedaverage, 'showdashboard' => $showdashboard]);
         // Load the javascript required to calculate new passingquotas based on new minnimum scores.
-        $PAGE->requires->js_call_amd('scormreport_heatmap/dashboard_passingquota', 'init', array($scoredata));
+        $PAGE->requires->js_call_amd('scormreport_question/dashboard_passingquota', 'init', array($scoredata));
         // Load the javascript that injects the visualized results for the questions.
-        $PAGE->requires->js_call_amd('scormreport_heatmap/report_view', 'init', array($questiondata));
+        $PAGE->requires->js_call_amd('scormreport_question/report_view', 'init', array($questiondata));
     }
 }

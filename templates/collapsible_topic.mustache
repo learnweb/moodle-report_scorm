@@ -1,15 +1,15 @@
-<div class="scormreport_heatmap_switch_wrapper">
-    <input type="checkbox" id="{{id_prefix}}_switch" class="scormreport_heatmap_switch_input">
-    <label for="{{id_prefix}}_switch" class="scormreport_heatmap_switch_label">{{title}}</label>
-    <div id="{{id_prefix}}_rightside" class="scormreport_heatmap_rightside">
+<div class="scormreport_question_switch_wrapper">
+    <input type="checkbox" id="{{id_prefix}}_switch" class="scormreport_question_switch_input">
+    <label for="{{id_prefix}}_switch" class="scormreport_question_switch_label">{{title}}</label>
+    <div id="{{id_prefix}}_rightside" class="scormreport_question_rightside">
         {{#answers}}
-            {{#str}}answers, scormreport_heatmap{{/str}}: {{answers}}
+            {{#str}}answers, scormreport_question{{/str}}: {{answers}}
         {{/answers}}
         {{#average}}
-            {{#str}}average, scormreport_heatmap{{/str}}: {{average}}%
+            {{#str}}average, scormreport_question{{/str}}: {{average}}%
         {{/average}}
     </div>
-    <div id="{{id_prefix}}_hiddencontent" class="scormreport_heatmap_switched_text scormreport_heatmap_ident_1">
+    <div id="{{id_prefix}}_hiddencontent" class="scormreport_question_switched_text scormreport_question_ident_1">
 
     </div>
 </div>
