@@ -28,4 +28,11 @@ $string['passing'] = "Momentane Bestehensquote";
 $string['edit'] = "Bestehensgrenzen anpassen";
 $string['passinggrade'] = "Bestehensgrenze";
 $string['norawscore'] = "Ihr SCORM Paket hat keine Punkte gestpeichert, entweder sind noch keine Antworten vorhanden oder sie müssen ihr SCORM Paket konfigurieren um score_raw zu unterstützen".
-
+$string['notice_unanswered_questions_scorm'] = "SCORM gibt nur informationen zu Antworten auf Fragen an Moodle weiter, \
+insbesondere gibt SCORM keine Informationen über noch nicht beantwortete Fragen weiter. <br>" .
+                                                "Daher können einzelne Fragen in der unteren Übersicht fehlen, falls diese noch nicht von Studenten beantwortet wurden.";
+$string['notice_not_submitted_answers_scorm'] = "Bei Fragen mit festen Antwortmöglichkeiten gibt SCORM nur diejenigen Optionen an Moodle weiter die entweder von mindestens" .
+                                                 " einem Studenten gewählt wurden, oder aber als richtige Antwort eingestellt wurden.<br>" .
+                                                 "Antwortsoptionen die diese Kriterien nicht erfüllen, können daher leider nicht visualisiert," .
+                                                 " oder in die Auswertung der Frage miteinbezogen werden.";
+$string['select_editor'] = "SCORM Editor wählen";

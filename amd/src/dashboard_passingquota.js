@@ -21,7 +21,7 @@ const draw_passingquota_for_threshold = (threshold, userscores) => {
     // Now we add the new css class for the current threshold.
     percentagecircle.addClass(`p${percentage}`);
     let circletext = $('#scormreport_heatmap_passingcontainer > .c100 > .percentagecircledefaulttext');
-    // @codingStandardsIgnoreStart
+    // @codingStandardsIgnoreStart The % is interpreted as mod operator by coding standards.
     // And update the text in the circle.
     circletext.text(`${percentage}%`); //eslint-disable-line
     // @codingStandardsIgnoreEnd

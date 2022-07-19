@@ -7,5 +7,14 @@
     {{^showdashboard}}
         {{#str}} norawscore, scormreport_heatmap {{/str}}
     {{/showdashboard}}
-<div id="scormreport_heatmap_container"></div>
+    {{>scormreport_heatmap/noticebox}}
+    <div id="scormreport_heatmap_editor_dropdown_container">
+        <label for="scormreport_heatmap_choose_editor">{{#str}}select_editor, scormreport_heatmap{{/str}}</label>
+        <select id="scormreport_heatmap_choose_editor" name="editor">
+            <option value="articulate">Articulate</option>
+            <option value="ispringz">ispringz</option>
+            <option value="default" selected="">{{#str}}default{{/str}}</option>
+        </select>
+    </div>
+    <div id="scormreport_heatmap_container"></div>
 </div>

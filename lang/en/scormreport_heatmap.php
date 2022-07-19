@@ -28,3 +28,10 @@ $string['passing'] = "Projected passingquota";
 $string['edit'] = "Edit passing threshhold";
 $string['passinggrade'] = "Passing threshold";
 $string['norawscore'] = "Your SCORM Packet is not configured to support score_raw or there are no answers yet";
+$string['notice_unanswered_questions_scorm'] = "SCORM only informs moodle about what answers were given to a question not about the question itself.<br>" .
+                                                " Therefore we can only display questions that have been answered by at least one student.";
+$string['notice_not_submitted_answers_scorm'] = "SCORM only informs moodle about potential answers to questions if they were <br>" .
+                                                " a) picked by a student atleast once<br>" .
+                                                " b) part of the correct answer set<br>" .
+                                                " therefore calculations and shown options can be lacking answeroptions that don't fit either of these criteria";
+$string['select_editor'] = "Select SCORM editor";

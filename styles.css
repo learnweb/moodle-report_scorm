@@ -95,6 +95,22 @@
     margin-left: 1em;
 }
 
+.scormreport_heatmap_noticebox {
+    border: 1px solid red;
+}
+
+.scormreport_heatmap_notice {
+    margin-left: 10px;
+    margin-top: 10px;
+}
+
+#scormreport_heatmap_editor_dropdown_container {
+    margin-top: .3em;
+}
+
+#scormreport_heatmap_editor_dropdown_container > label {
+    margin-bottom: 0;
+}
 
 /****************************************************************
  *
