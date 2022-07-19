@@ -137,7 +137,7 @@ class scodata_provider {
             // A neutral result indicates that this question is not meant to be rated.
             // If this is the case, the refinetype field will have an empty value.
             if (empty($question['refinetype'])) {
-                // If there are learnwer responses, we want to display the question regardless.
+                // If there are learner responses, we want to display the question regardless.
                 // Otherwise this means that there are only neutral results and no responses.
                 // In that case we have nothing to visualize for this question.
                 if ($question['learner_responses']) {
@@ -287,6 +287,7 @@ class scodata_provider {
             $this->load_user_attempts();
         }
 
+        // TODO: explain
         $cmisubstitutions = [
             'student_response' => 'learner_response',
         ];
