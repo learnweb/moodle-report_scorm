@@ -2,16 +2,18 @@ import {exception as displayException} from 'core/notification';
 import Templates from 'core/templates';
 import $ from 'jquery';
 
-// Our plugin focusses on the Articulate and ispringx editor of SCORM
-// These editors (and many others) prepend their questions with a grouping identifier like SceneX or SlideX.
+// Our plugin focusses on the Articulate and ispring editor of SCORM
+// These editors (and others) prepend their questions with a grouping identifier like SceneX or SlideX.
 // This function is grouping the questions by using these identifiers.
+// The grouping of this data is done in js instead of the php part of the plugin, to allow for dynamic editor switches
+// in the future.
 const group_questions = (scormdata) => {
     let scormchartdata = {};
     // Iterate over all sco objects of the SCROM packet.
     for (let scoid in scormdata) {
-        // Initalize a section for this sco to store data in inside of the scormchartdata array.
+        // Initalize a section for this sco to store data in inside the scormchartdata array.
         scormchartdata[scoid] = {};
-        let scodata = scormdata[scoid].questions;
+        let scodata = scormdata[scoid]?.questions || {}; // @codingStandardsIgnoreLine ? syntax is not implemented in cs
         let scotitle = scormdata[scoid].title;
         let groups = {};
 
@@ -72,17 +74,17 @@ const group_questions = (scormdata) => {
 
 // Renders a table that displays answers given by students individually.
 const add_single_question_unscored_default = (questiondata, appendidentifier, editor) => {
-    let questiontext = get_title_for_editor[editor](questiondata);
+    let questiontext = get_title_from_questiondata(questiondata, editor);
     let context = {
         title: questiontext,
         id_prefix: `unscored_table_switch_${questiondata.id}`,
-        answers: questiondata.total_answers,
+        answers: questiondata?.total_answers || 0, // @codingStandardsIgnoreLine ? syntax is not implemented in cs
         identlevel: 1
     };
     Templates.renderForPromise('scormreport_question/collapsible_topic', context).then(({html, js}) => {
         Templates.appendNodeContents(appendidentifier, html, js);
         let context = {
-            'lines': questiondata.learner_responses,
+            'lines': questiondata?.learner_responses || [], // @codingStandardsIgnoreLine ? syntax is not implemented in cs
             'id': questiondata.id,
         };
         Templates.renderForPromise('scormreport_question/unscored_default_table', context).then(({html}) => {
@@ -96,7 +98,7 @@ const add_single_question_unscored_default = (questiondata, appendidentifier, ed
 
 // Renders a bar diagramm to show the distribution of numerical answers to a non-scored question.
 const add_single_question_plotly_unscored_numeric = (questiondata, appendidentifier, editor) => {
-    let questiontext = get_title_for_editor[editor](questiondata);
+    let questiontext = get_title_from_questiondata(questiondata, editor);
     let countscores = {};
     for (let scorearray of questiondata.learner_responses) {
         for (let score of scorearray) {
@@ -121,7 +123,8 @@ const add_single_question_plotly_unscored_numeric = (questiondata, appendidentif
         y: y,
         type: 'bar'
     }];
-    let context = {'id': questiondata.id, title: questiontext, answers: questiondata.total_answers};
+    // @codingStandardsIgnoreLine ? syntax is not implemented in cs
+    let context = {'id': questiondata.id, title: questiontext, answers: questiondata?.total_answers || 0};
     Templates.renderForPromise('scormreport_question/plotlysection', context).then(({html, js}) => { // Ceate new plotly wrapper.
         Templates.appendNodeContents(appendidentifier, html, js); // Append it to the current toggleable scene.
         window.Plotly.newPlot('scormreport_question_section_' + questiondata.id, data); // Add plotly graph.
@@ -132,7 +135,7 @@ const add_single_question_plotly_unscored_numeric = (questiondata, appendidentif
 // Renders a plotly violin plot for a scored question to represent the distribution of Student scores.
 // Students are scored on a scale from 0 to 100 points to represent the corectness of their answer.
 const add_single_question_plotly_scored_violin = (questiondata, appendidentifier, editor) => {
-    let questiontext = get_title_for_editor[editor](questiondata);
+    let questiontext = get_title_from_questiondata(questiondata, editor);
     let singletrace = {
         y0: " ", // This is the label for an individual violin plot. Since we only display one per question we dont need a title.
         x: questiondata.percentages,
@@ -158,11 +161,12 @@ const add_single_question_plotly_scored_violin = (questiondata, appendidentifier
         },
         xaxis: {
             range: [0, 1],
-            tickformat: ',.0%' // Telling plotly to format the x axis as percentage.
+            tickformat: ',.0%' // Telling plotly to format the x-axis as percentage.
         },
         violinmode: "overlay",
     };
-    let context = {'id': questiondata.id, title: questiontext, answers: questiondata.total_answers};
+    // @codingStandardsIgnoreLine ? syntax is not implemented in cs
+    let context = {'id': questiondata.id, title: questiontext, answers: questiondata?.total_answers || 0};
     Templates.renderForPromise('scormreport_question/plotlysection', context).then(({html, js}) => { // Ceate new plotly wrapper.
         Templates.appendNodeContents(appendidentifier, html, js); // Append it to the current toggleable scene.
         window.Plotly.newPlot('scormreport_question_section_' + questiondata.id, [singletrace], layout); // Add plotly graph.
@@ -173,7 +177,7 @@ const add_single_question_plotly_scored_violin = (questiondata, appendidentifier
 // Renders a circle for a boolean scored question that was either 100% correct or 100% false for all students.
 // The circle represents the amount of students that got it right vs the total amount.
 const add_single_question_boolean = (questiondata, appendidentifier, editor) => {
-    let questiontext = get_title_for_editor[editor](questiondata);
+    let questiontext = get_title_from_questiondata(questiondata, editor);
 
     let correct = questiondata.correct_answers;
     let total = questiondata.total_answers;
@@ -207,6 +211,7 @@ const add_question = (questiondata, idprefix, editor) => {
         }
     }
     // The appendidentifier is the jquery selector used to append the questions visualization to.
+    // In our case we want to append the visualization of the toggleable section of the questions group.
     let appendidentifier = `#${idprefix}_hiddencontent`;
     // We differentiate between four types of questions.
     // Questions that are scored can either be:.
@@ -216,12 +221,12 @@ const add_question = (questiondata, idprefix, editor) => {
         add_single_question_boolean(questiondata, appendidentifier, editor);
     } else if (questiondata.displaytype === "manual_scored") {
         // ... manually scored. This means that students answers lie on a spectrum that determines their "correctness"
-        // To visualize this students answers are aggreagted in a violin plot.
+        // To visualize this, students answers are aggreagted in a violin plot.
         add_single_question_plotly_scored_violin(questiondata, appendidentifier, editor);
     } else if (questiondata.displaytype === "numeric_unscored") {
         // Or Questions can be unscored.
         // If the Question has only numeric answers we visualize their distribution in a Bar chart instead of a violin chart
-        // ...this is possible because these answers usually dont vary alot and are all integers unlike percentages.
+        // ...this is possible because these answers usually don't vary a lot and are all integers unlike percentages.
         add_single_question_plotly_unscored_numeric(questiondata, appendidentifier, editor);
     } else if (questiondata.displaytype === "default_unscored") {
         // If the question is not scored and not numeric it's most likely a free-text answer.
@@ -243,8 +248,8 @@ const predict_editor = (scormdata) => {
                 // The articulate editor typically puts the questions text in the description.
                 return "articulate";
             } else if (question.id.match(/Slide\d+_Q_[^_]*_(?:\d*_)?_?((?<!__).*)/)?.length || 0 > 1) {
-                // The ispringz editor puts the Questionname in the id of the question and follows a very specific format.
-                return "ispringz";
+                // The ispring editor puts the Questionname in the id of the question and follows a very specific format.
+                return "ispring";
             }
         }
     }
@@ -253,15 +258,19 @@ const predict_editor = (scormdata) => {
 
 // Callback map to get a title for a set editor.
 // The x?.y || z syntax returns x.y if it exists and isn't falsy otherwise it returns z
-// The ?. can be chained in that case none of them shall be falsy to return x.y
-const get_title_for_editor = {
+// The ?. can be chained in that case none of them may be falsy to return x.y
+const _editorcallbacks = {
     'articulate': (questiondata) => questiondata.description !== "" ? questiondata.description.trim() : questiondata.id,
-    'ispringz': ((questiondata) => questiondata.id.match(/Slide\d+_Q_[^_]*_(?:\d*_)?_?((?<!__).*)/)?.[1]?.replaceAll('_', ' ')
+    'ispring': ((questiondata) => questiondata.id.match(/Slide\d+_Q_[^_]*_(?:\d*_)?_?((?<!__).*)/)?.[1]?.replaceAll('_', ' ')
         || get_title_for_editor['default'](questiondata)),
     'default': (questiondata) => questiondata.id
 };
 /* eslint-enable */
 // @codingStandardsIgnoreEnd
+const get_title_from_questiondata = (questiondata, editor = 'default') => {
+    // @codingStandardsIgnoreLine ? syntax is not implemented in cs
+    return _editorcallbacks?.[editor](questiondata) || _editorcallbacks['default'](questiondata);
+};
 
 const init_editor_choser = (scormdata, predicted_editor) => {
     // Change the dropdown to have the predicted editor selected.
@@ -269,16 +278,13 @@ const init_editor_choser = (scormdata, predicted_editor) => {
     // Define onchange callback for the editor selection dropdown.
     $('#scormreport_question_choose_editor').change(() => {
         let editor = $('#scormreport_question_choose_editor').val().toLowerCase();
-        if (!(editor in get_title_for_editor)) {
-            editor = "default";
-        }
         for (let sco of Object.values(scormdata)) {
             for (let question of Object.values(sco.questions)) {
                 // Set new title for questionsections (plotly and circle).
-                $(`#scormreport_question_sectionwrapper_${question.id} > div > h2`).text(get_title_for_editor[editor](question));
+                $(`#scormreport_question_sectionwrapper_${question.id} > div > h2`).text(get_title_from_questiondata(question, editor));
                 // @codingStandardsIgnoreStart Coding standards doesn't like = without whitespaces.
                 // Also change the title for tables. (unscored non-numeric questions)
-                $(`label[for=unscored_table_switch_${question.id}_switch]`).text(get_title_for_editor[editor](question));
+                $(`label[for=unscored_table_switch_${question.id}_switch]`).text(get_title_from_questiondata(question, editor));
                 // @codingStandardsIgnoreEnd
             }
         }

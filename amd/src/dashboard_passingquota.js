@@ -4,7 +4,7 @@ import Passmodal from 'scormreport_question/modal_passgrade';
 import $ from 'jquery';
 
 // This function updates the passing percentage circle to reflect the passigquota for a given threshold.
-const draw_passingquota_for_threshold = (threshold, userscores) => {
+const update_passingquota_visual_for_threshold = (threshold, userscores) => {
     let passing = 0;
     for (let score of userscores) {
         if (score >= threshold) {
@@ -38,7 +38,7 @@ export const init = (userscores) => {
             if (isNaN(passtreshold)) {
                 return;
             }
-            draw_passingquota_for_threshold(passtreshold, userscores);
+            update_passingquota_visual_for_threshold(passtreshold, userscores);
             modal.hide();
         };
         $('#scormreport_question_settings').click(() => {
@@ -46,5 +46,5 @@ export const init = (userscores) => {
         });
         return true;
     }).catch(ex => displayException(ex));
-    draw_passingquota_for_threshold(50, userscores);
+    update_passingquota_visual_for_threshold(50, userscores);
 };

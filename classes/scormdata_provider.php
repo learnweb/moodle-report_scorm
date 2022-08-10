@@ -405,7 +405,7 @@ class scodata_provider {
     }
 
     /*
-     * Writes the provided value to a number keys in an associative array, creating non-existent sub-arrays on the way.
+     * Writes the provided value to a number of keys in an associative array, creating non-existent sub-arrays on the way.
      * If operation is set to "push" instead of "write", the value will be pushed into an array instead.
      */
     private static function write_to_keychain(&$array, $keychain, $value, $operation = "write") {
