@@ -1,32 +1,33 @@
 # report_scorm
+## General Warning
+SCORM is in general extremley restrictive with what information it passes to a LMS like Moodle.
+In addition, standards vary not only between versions but different editors have competing standards aswell.
+Because of this some functionality like extracting a questions title may be unavailable.
+In extreme cases (for example if the id field of questions is renamed) the plugin might even not work at all.  
+Below you can find a table of editor and version combinations that have been tested.
+Please note that this is merely an indicator as your SCORM packets configurations might be different from those tested.
+
+| Editor      | SCORM version | Restrictions |
+|-------------|---------------|--------------|
+| Ispring     | TBD           | -            |
+| Articulate  | TBD           | -            |
+
 ## Purpose
-This Plugin adds a new report functionality to scorm activities in moodle.  
-It shows data on a question-level and tries to find non binary data wherever possible.  
-This non binary data is displayed in violin plots allowing for a more nuanced view of the students performance than averages or means.  
+This plugin is adding a new report type to SCORM packets,
+focussing on evaluating individual questions.  
+Every question's results are visualized based on what kind of question it is.
+There are 4 basic question types.  
+
+- Scored questions where an answer can lie on a spectrum of "correctnes" are visualized using a violin-plot. Classical example of this would be a multiple-choice-question ![](pics/violin.png)
+- Scored questions where an answer is either right or wrong are visualized by showing the amount of total and correct answers![](pics/percentagecircle.png)
+- Unscored questions that has only numerical answers like i.E. a likert-scala will be visualized with a bar diagramm![](pics/bars.png)
+- Unscored questions that have a range of answers will have their answers displayed in a table
+
+## Installation
+
+To install this plugin clone this repository into `moodleroot/mod/scorm/report/question`
 
 ## Technical Details
-
-### Files
-
-This section gives a quick overview of the files used in this plugin and their function. Files that are strictly related to the moodle framework such as version.php are not explained here.
-
-* report.php  
-This file is the entrypoint of the plugin. It does some validation and sanitizing of user input as well as setting the page title and url etc. It's tasks are mostly related to standard moodle setup procedures.
-
-* classes/report.php  
-This file is containing the custom class that extends the baseclass for reports \mod_score\report. It gets its data from classes/scormdata_provider and feeds it into inital mustache templates. It also calls for javascript to be injected into the page.
-
-* classes/scormdata_provider.php  
-    This is where most of the plugins work is done. This class is tasked with loading scorm data and extracting valuable information from it.
-
-* amd/src/report_view.js  
-This file gets passed the data from the scormdata_provider from classes/report and sets up the site accordingly. The javascript is also where most mustache files are being rendered and subsequently injected into the page.
-In addition to this the file also sets up the click callback for the settings button.
-* amd/src/modal_passgrade  
-Defines a very simple modal that allows to input a number and invoke a callback when that number is submitted. It is used by amd/src/report_view to create a modal that allows for the input of a custom passing threshold for the class. 
-
-### Data Structure
-
 ###### A quick notice on SCORM SCO terminology
 
 Not all scos are the same there may also be 'informational' scos that do not contain any "lesson information" instead they hold metadata of the creating organization etc.
@@ -36,3 +37,12 @@ So while these are found in the sco table for an sco to hold any information abo
 ### Understanding the flow of this plugin
 To understand the flow of this Plugin it is recommended to start in the classes/report.php file. 
 Here you can find the display function that is invoked by Moodle.
+
+The high-level flow is:  
+Initially we get the scormid from moodle. We then fetch the associated SCOIDs from the database.
+For each sco we then retrieve all track data from the database,
+this data is structured in the cmi-dot-notation meaning we get a big array with "cmi.path.to.resource":"value".
+from this large unstructured array we build the corrosponding structure as arrays and subarrays ($array['path']['to]['resource]=value).
+The corrosponding data structure will be structured by attempt made by a student. We restructure this to instead reflect what attempts were made for a question.
+We then add some statistical data like percentage correct.  
+This is now passed to the javascript where we try to group questions, extract some info like the questiontext and finally choose what visualizations type to use for this question and append its visualization to the DOM.
