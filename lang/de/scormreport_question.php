@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$string['pluginname'] = "Punkteverteilungskarte";
+$string['pluginname'] = "Einzelfragenauswertung";
 $string['report_scorm'] = "SCORM Auswertung";
 $string['report'] = "Auswertung";
 $string['report_for'] = "Auswertung für ";
