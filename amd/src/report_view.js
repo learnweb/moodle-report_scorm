@@ -281,7 +281,8 @@ const init_editor_choser = (scormdata, predicted_editor) => {
         for (let sco of Object.values(scormdata)) {
             for (let question of Object.values(sco.questions)) {
                 // Set new title for questionsections (plotly and circle).
-                $(`#scormreport_question_sectionwrapper_${question.id} > div > h2`).text(get_title_from_questiondata(question, editor));
+                $(`#scormreport_question_sectionwrapper_${question.id} > div > h2`)
+                    .text(get_title_from_questiondata(question, editor));
                 // @codingStandardsIgnoreStart Coding standards doesn't like = without whitespaces.
                 // Also change the title for tables. (unscored non-numeric questions)
                 $(`label[for=unscored_table_switch_${question.id}_switch]`).text(get_title_from_questiondata(question, editor));
