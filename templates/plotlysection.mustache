@@ -4,11 +4,5 @@
         <span class="scormreport_question_rightside">{{#str}}answers, scormreport_question{{/str}}: {{answers}}</span>
     </div>
     <div id="scormreport_question_section_{{id}}" class="scormreport_question_plotly_section">
-        {{#percentage}}
-        {{<scormreport_question/percentagecircle}}
-            {{$text}}{{correct}}/{{total}}{{/text}}
-            {{$percentage}}{{percentage}}{{/percentage}}
-        {{/scormreport_question/percentagecircle}}
-        {{/percentage}}
     </div>
 </div>
