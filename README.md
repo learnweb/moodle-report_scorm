@@ -28,18 +28,14 @@ There are 4 basic question types.
 To install this plugin clone this repository into `moodleroot/mod/scorm/report/question`
 
 ## Technical Details
-###### A quick notice on SCORM SCO terminology
-
-Not all scos are the same there may also be 'informational' scos that do not contain any "lesson information" instead they hold metadata of the creating organization etc.
-While these 'scos' are found in the scorm->sco reference table and their id is returned when querying for scos belonging to a scorm packet they do not represent a 'real' scorm packet.  
-So while these are found in the sco table for an sco to hold any information about lessons it needs to have its type set to 'sco'.
 
 ### Understanding the flow of this plugin
 To understand the flow of this Plugin it is recommended to start in the classes/report.php file. 
 Here you can find the display function that is invoked by Moodle.
 
 The high-level flow is:  
-Initially we get the scormid from moodle. We then fetch the associated SCOIDs from the database.
+Initially we get the SCORMid from moodle.
+Since a SCORM-packet is made up of multiple Sharable Content Objects (the lessons or lesson-groups of a SCORM packet. Also reffered to as SCOs) we then fetch the ID's of the SCO objects associated with the given SCORM.
 For each sco we then retrieve all track data from the database,
 this data is structured in the cmi-dot-notation meaning we get a big array with "cmi.path.to.resource":"value".
 from this large unstructured array we build the corrosponding structure as arrays and subarrays ($array['path']['to]['resource]=value).
