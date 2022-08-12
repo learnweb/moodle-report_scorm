@@ -57,10 +57,10 @@ class scormdata_provider {
         $scos = $DB->get_records('scorm_scoes', array("scorm" => $this->scormid), 'sortorder, id');
         foreach ($scos as $scodata) {
             $scoid = $scodata->id;
-            // SCO stands for sharable content object. In theory those are learning modules for a scorm.
+            // SCO stands for sharable content object. In theory those are learning modules for a scorm module.
             // However scorm also stores a bunch of metadata and nothing else in some of them.
             // These SCOS have the SCO type org.
-            // Therefore for a SCO to be an actual SCO one needs to check whether the SCO has its type set to SCO.
+            // Therefore for a SCO to be a SCO we actually care about, one needs to check whether the SCO has its type set to 'sco'.
             if ($scodata->scormtype === 'sco') {
                 $this->scos[$scoid] = new scodata_provider($scoid, $scodata->title);
             }
