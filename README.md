@@ -9,8 +9,8 @@ Please note that this is merely an indicator as your SCORM packets configuration
 
 | Editor      | SCORM version | Restrictions |
 |-------------|---------------|--------------|
-| Ispring     | TBD           | -            |
-| Articulate  | TBD           | -            |
+| Ispring     | SCORM 1.2     | -            |
+| Articulate  | SCORM 2004    | -            |
 
 ## Purpose
 This plugin is adding a new report type to SCORM packets,
