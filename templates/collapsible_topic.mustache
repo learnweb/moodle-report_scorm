@@ -1,3 +1,32 @@
+{{!
+    @template scormreport_question/collapsible_topic
+
+    Creates a js-less sectionheader that can be extended to show the body.
+    Header will include a section where 'total answers' as well as an 'average percentage' can be shown.
+    The body is empty and needs to be appended manually.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * id_prefix - a unique id to prefix the elements of the template.
+    * answers - the total amount of answers
+    * average - the average percentage of correct answers
+
+    Example context (json):
+    {
+        "id_prefix": "exampleid",
+        "answers": 100,
+        "average": 54,
+    }
+
+}}
+
+
+
 <div class="scormreport_question_switch_wrapper">
     <input type="checkbox" id="{{id_prefix}}_switch" class="scormreport_question_switch_input">
     <label for="{{id_prefix}}_switch" class="scormreport_question_switch_label">{{title}}</label>
