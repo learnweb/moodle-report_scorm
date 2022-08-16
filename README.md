@@ -38,7 +38,7 @@ Initially we get the SCORMid from moodle.
 Since a SCORM-packet is made up of multiple Sharable Content Objects (the lessons or lesson-groups of a SCORM packet. Also reffered to as SCOs) we then fetch the ID's of the SCO objects associated with the given SCORM.
 For each sco we then retrieve all track data from the database,
 this data is structured in the cmi-dot-notation meaning we get a big array with "cmi.path.to.resource":"value".
-from this large unstructured array we build the corrosponding structure as arrays and subarrays ($array['path']['to]['resource]=value).
+from this large unstructured array we build the corrosponding structure as arrays and subarrays ($array['path']['to']['resource']=value).
 The corrosponding data structure will be structured by attempt made by a student. We restructure this to instead reflect what attempts were made for a question.
 We then add some statistical data like percentage correct.  
 This is now passed to the javascript where we try to group questions, extract some info like the questiontext and finally choose what visualizations type to use for this question and append its visualization to the DOM.
