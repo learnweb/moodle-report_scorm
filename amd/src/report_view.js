@@ -261,7 +261,7 @@ const predict_editor = (scormdata) => {
 // The ?. can be chained in that case none of them may be falsy to return x.y
 const _editorcallbacks = {
     'articulate': (questiondata) => questiondata.description !== "" ? questiondata.description.trim() : questiondata.id,
-    'ispring': ((questiondata) => questiondata.id.match(/Slide\d+_Q_[^_]*_(?:\d*_)?_?((?<!__).*)/)?.[1]?.replaceAll('_', ' ')
+    'ispring': ((questiondata) => questiondata.id.match(/Slide\d+_Q_[^_]*_(?:\d*_)?_?((?:(?<!____).)*)/)?.[1]?.replaceAll('_', ' ')
         || get_title_for_editor['default'](questiondata)),
     'default': (questiondata) => questiondata.id
 };
