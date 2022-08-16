@@ -18,9 +18,9 @@ focussing on evaluating individual questions.
 Every question's results are visualized based on what kind of question it is.
 There are 4 basic question types.  
 
-- Scored questions where an answer can lie on a spectrum of "correctnes" are visualized using a violin-plot. Classical example of this would be a multiple-choice-question ![](pics/violin.png)
-- Scored questions where an answer is either right or wrong are visualized by showing the amount of total and correct answers![](pics/percentagecircle.png)
-- Unscored questions that has only numerical answers like i.E. a likert-scala will be visualized with a bar diagramm![](pics/bars.png)
+- Scored questions where an answer can lie on a spectrum of "correctnes" are visualized using a violin-plot. Classical example of this would be a multiple-choice-question ![](pix/violin.png)
+- Scored questions where an answer is either right or wrong are visualized by showing the amount of total and correct answers![](pix/percentagecircle.png)
+- Unscored questions that has only numerical answers like i.E. a likert-scala will be visualized with a bar diagramm![](pix/bars.png)
 - Unscored questions that have a range of answers will have their answers displayed in a table
 
 ## Installation
