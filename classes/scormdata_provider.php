@@ -287,7 +287,8 @@ class scodata_provider {
             $this->load_user_attempts();
         }
 
-        // TODO: explain
+        // Fields in SCORMs data model have been renamed for newer verstions.
+        // This is a list of fields that need renaming to be backwards compatible.
         $cmisubstitutions = [
             'student_response' => 'learner_response',
         ];
