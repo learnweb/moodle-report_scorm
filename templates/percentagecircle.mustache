@@ -1,0 +1,32 @@
+{{!
+    @template scormreport_question/percentagecircle
+
+    Creates a circle with a border that will be green and grey. The extent to which the green part of the border has extended reflects the percentage passed.
+    The green percentage indicator starts at the 12 o'clock position (so 25% would be from the 12 o'clock position to the 3 o'clock position).
+    A text can be passed that will be displayed inside of the circle.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * none
+
+    Example context (json):
+    {
+        "percentage": 60,
+        "text": "60%",
+    }
+
+}}
+
+
+<div class="c100 p{{$percentage}}0{{/percentage}} big green">
+    <span class="percentagecircledefaulttext">{{$text}}{{/text}}</span>
+    <div class="slice">
+        <div class="bar"></div>
+        <div class="fill"></div>
+    </div>
+</div>

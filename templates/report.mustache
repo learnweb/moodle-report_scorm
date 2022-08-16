@@ -1,0 +1,43 @@
+{{!
+    @template scormreport_question/report
+
+    Displays the question report
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * showdashboard - wether the dashboard should be shown
+
+    Example context (json):
+    {
+        "showdashboard": 1,
+        "averagepercentage": 70,
+    }
+
+}}
+
+
+<script src="https://cdn.plot.ly/plotly-2.11.1.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js'></script>
+<div>
+    {{#showdashboard}}
+    {{>scormreport_question/dashboard}}
+    {{/showdashboard}}
+    {{^showdashboard}}
+        {{#str}} norawscore, scormreport_question {{/str}}
+    {{/showdashboard}}
+    {{>scormreport_question/noticebox}}
+    <div id="scormreport_question_editor_dropdown_container">
+        <label for="scormreport_question_choose_editor">{{#str}}select_editor, scormreport_question{{/str}}</label>
+        <select id="scormreport_question_choose_editor" name="editor">
+            <option value="articulate">Articulate</option>
+            <option value="ispringz">ispringz</option>
+            <option value="default" selected="">{{#str}}default{{/str}}</option>
+        </select>
+    </div>
+    <div id="scormreport_question_container"></div>
+</div>
