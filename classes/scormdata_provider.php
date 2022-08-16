@@ -310,7 +310,12 @@ class scodata_provider {
                     // If the cmi path is only one long this would mean it only contains "cmi" as full path.
                     // This would not make sense as cmi is only a prefix and can't hold a value itself.
                     if (count($cmipath) <= 1) {
-                        continue;
+                        // In that case try again with an underscore
+                        $cmipath = explode('_', $matches[2]);
+                        if (count($cmipath) <= 1) {
+                            // If that fails, ignore the record, something went wrong.
+                            continue;
+                        }
                     }
                     // Removes the cmi prefix that would introduce an unecessary dimension to the reconstructed array.
                     array_shift($cmipath);
