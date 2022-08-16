@@ -87,7 +87,7 @@ const add_single_question_unscored_default = (questiondata, appendidentifier, ed
             'lines': questiondata?.learner_responses || [], // @codingStandardsIgnoreLine ? syntax is not implemented in cs
             'id': questiondata.id,
         };
-        Templates.renderForPromise('scormreport_question/unscored_default_table', context).then(({html}) => {
+        Templates.renderForPromise('scormreport_question/unscoreddefaulttable', context).then(({html}) => {
             // Create new table of all resposes for some reason appendNodeContents does not work here.
             $(`#unscored_table_switch_${questiondata.id}_hiddencontent`).html(html);
             return true;
@@ -191,7 +191,7 @@ const add_single_question_boolean = (questiondata, appendidentifier, editor) => 
         'correct': correct,
         'total': total
     };
-    Templates.renderForPromise('scormreport_question/scored_binary_section', context).then(
+    Templates.renderForPromise('scormreport_question/scoredbinarysection', context).then(
         ({html, js}) => {
             Templates.appendNodeContents(appendidentifier, html, js);
             return true;
