@@ -14,6 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Strings for component 'scormreport_question', language 'en'
+ *
+ * @package   scormreport_question
+ * @copyright 2021 onwards Robin Tschudi
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 $string['pluginname'] = "Question report";
 $string['report_scorm'] = "SCORM Report";
 $string['report'] = "Report";

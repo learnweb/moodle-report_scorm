@@ -1,3 +1,29 @@
+{{!
+    @template scormreport_question/unscoreddefaulttable
+
+    Creates a table with single column and the content of each cell being given by an array.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Contect variables required for this template:
+    * id - a unique id
+    * lines - an array of lines to be displayed
+
+    Example context (json):
+    {
+        "id": "myid",
+        "lines":  [
+            "First line",
+            "Second line"
+        ]
+    }
+
+}}
+
 <div id="scormreport_question_sectionwrapper_{{id}}">
     <table class="table table-striped table-hover scormreport_question_table_fixed">
         {{#lines}}

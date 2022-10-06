@@ -17,14 +17,13 @@
 /**
  * Version details.
  *
- * @package    report
- * @subpackage scorm
+ * @package    scormreport_question
  * @copyright  2021 onwards Robin Tschudi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2021091504;       // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2021052500;       // Requires this Moodle version
-$plugin->component = 'scormreport_question'; // Full name of the plugin (used for diagnostics)
+$plugin->version   = 2021091504;       // The current plugin version (Date: YYYYMMDDXX).
+$plugin->requires  = 2021052500;       // Requires this Moodle version.
+$plugin->component = 'scormreport_question'; // Full name of the plugin (used for diagnostics).

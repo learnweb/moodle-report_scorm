@@ -13,20 +13,54 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * This file defines the scormdata_provider and scodata_provider classes.
+ *
+ * @package   scormreport_question
+ * @copyright 2021 onwards Robin Tschudi
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace scormreport_question;
 
 defined('MOODLE_INTERNAL') || die();
 require_once("$CFG->dirroot/mod/scorm/locallib.php");
 
-// This class is a cache for scormdata.
+/**
+ * Provides scores and detailed question statistics for a provided SCORM module.
+ *
+ * Class scormdata_provider
+ * @package scormreport_question
+ */
 class scormdata_provider {
+    /**
+     * The SCORMID to provide data for.
+     * @var int
+     */
+    private $scormid;
 
+    /**
+     * SCO dataproviders to query for data.
+     * @var array
+     */
+    private $scos;
+
+    /**
+     * scormdata_provider constructor.
+     * @param $scormid int
+     * @throws \dml_exception
+     */
     public function __construct($scormid) {
         $this->scormid = $scormid;
         $this->scos = [];
         $this->load_scos();
     }
 
+    /**
+     * Returns an array with this SCORMs questions statistics to be displayed.
+     * @return array Data for this question such as displaytype, correctness and title.
+     */
     public function get_sco_questiondata () {
         $questiondata = [];
         // Loop over all SCO's of this SCORM and return their questiondata in an array.
@@ -38,6 +72,10 @@ class scormdata_provider {
         return $questiondata;
     }
 
+    /**
+     * Returns all userscores.
+     * @return array usersores of all users in this scorm.
+     */
     public function get_sco_userscores () {
         $scores = [];
         // Loop over all SCO's in this SCORM and merge the scores that are provided.
@@ -52,6 +90,10 @@ class scormdata_provider {
 
     // A scorm module may consist of one or multiple sharable content objects (SCOs). These scos hold the actual data.
     // this function retrives the scos connected to a scorm packet and intitalizes their data.
+    /**
+     * Loads data for all SCOs associated with this SCORM module.
+     * @throws \dml_exception
+     */
     public function load_scos() {
         global $DB;
         $scos = $DB->get_records('scorm_scoes', array("scorm" => $this->scormid), 'sortorder, id');
@@ -72,13 +114,61 @@ class scormdata_provider {
 // Class to cache data for a SCO.
 // this class has two main public methods:
 // get_user_scores returns an array of user scores.
-// get_user_interactions returns an array of userinteractions within the SCO.
+// get_questiondata returns an array of question related data within the SCO.
+/**
+ * Provides userscores and detailed questionstatistics for a provided SCO.
+ *
+ * Class scodata_provider
+ * @package scormreport_question
+ */
 class scodata_provider {
 
+    /**
+     * identifier used by SCORM to indicate a correct result.
+     */
     private const TOKEN_CORRECT = 'correct';
+    /**
+     * identifier used by SCORM to indicate a false result.
+     */
     private const TOKEN_FALSE = 'false';
+    /**
+     * identifier used by SCORM to indicate that the result is neither correct nor false.
+     */
     private const TOKEN_NEUTRAL = 'neutral';
+    /**
+     * @var String Title of the SCO
+     */
+    private $title;
+    /**
+     * @var int id of this SCO according to the scorm_scoes table.
+     */
+    private $scoid;
+    /**
+     * @var array ids of learner users associated with this SCO.
+     */
+    private $userids;
+    /**
+     * @var array array of attempts done by users to answer questions.
+     */
+    private $attempts;
+    /**
+     * @var array array of all interactions users caused in this SCO.
+     */
+    private $interactions;
+    /**
+     * @var array array of userscores achieved in this SCO.
+     */
+    private $scores;
+    /**
+     * @var array array of data to be displayed to visualize overall students performance for a question.
+     */
+    private $questiondata;
 
+    /**
+     * scodata_provider constructor.
+     * @param $scoid int the scoid according to the scorm_scoes table
+     * @param $title String the SCOs title.
+     */
     public function __construct($scoid, $title) {
         $this->title = $title;
         $this->scoid = $scoid;
@@ -89,6 +179,10 @@ class scodata_provider {
         $this->questiondata = null;
     }
 
+    /**
+     * Returns the best score of every user in this SCO.
+     * @return array
+     */
     public function get_user_scores () {
         // If scores are already present return them.
         if (!is_null($this->scores)) {
@@ -108,6 +202,10 @@ class scodata_provider {
         return $scores;
     }
 
+    /**
+     * Returns an array with this SCOs questions statistics to be displayed.
+     * @return array
+     */
     public function get_questiondata () {
         // If there is no questiondata yet, load it.
         if (is_null($this->questiondata)) {
@@ -117,6 +215,9 @@ class scodata_provider {
         return $this->questiondata;
     }
 
+    /** Returns an array with this SCOs user interationcs.
+     * @return array user interactions
+     */
     public function get_user_interactions () {
         if (is_null($this->interactions)) {
             $this->load_user_interactions();
@@ -128,6 +229,10 @@ class scodata_provider {
     // Since during the original developement of this plugin only scorm questions that had correct and wrong answers
     // ... were considered this was developed as a core feature of the plugin.
     // TODO move this to javascript so it can be enabled and disabled based on the scormpacket provided.
+    /**
+     * Computes the percentage an answer was correct for all answers to all questions in this SCO
+     * Adds percentages and displaytype to the questions questiondata array entry.
+     */
     public function infuse_questiondata_with_percentages() {
         if (is_null($this->questiondata)) {
             $this->load_questiondata();
@@ -169,6 +274,9 @@ class scodata_provider {
         }
     }
 
+    /**
+     * Loads a questions raw data aswell as some statistics into the questiondata array.
+     */
     public function load_questiondata () {
         // If there is no interactiondata loaded yet, load it.
         if (empty($this->interactions)) {
@@ -231,7 +339,7 @@ class scodata_provider {
                     $refineddata[$id]['learner_responses'][] = $learnerresponse;
                 }
                 // If there are also exists a correct response pattern set refinetype to be scored manually.
-                if (array_key_exists('learner_response', $interaction) and array_key_exists('correct_responses', $interaction)) {
+                if (array_key_exists('learner_response', $interaction) && array_key_exists('correct_responses', $interaction)) {
                     if ($refineddata[$id]['refinetype'] !== 'manual_scored') {
                         $refineddata[$id]['refinetype'] = 'manual_scored';
                     }
@@ -256,6 +364,9 @@ class scodata_provider {
         }
     }
 
+    /**
+     * Loads all user interactions and transforms them from a cmi model to an array based structure.
+     */
     public function load_user_interactions () {
         /*
          * SCO data is stored by using the cmi model.
@@ -310,7 +421,7 @@ class scodata_provider {
                     // If the cmi path is only one long this would mean it only contains "cmi" as full path.
                     // This would not make sense as cmi is only a prefix and can't hold a value itself.
                     if (count($cmipath) <= 1) {
-                        // In that case try again with an underscore
+                        // In that case try again with an underscore.
                         $cmipath = explode('_', $matches[2]);
                         if (count($cmipath) <= 1) {
                             // If that fails, ignore the record, something went wrong.
@@ -340,6 +451,11 @@ class scodata_provider {
         }
     }
 
+    /**
+     * takes a quesitons data and provides an array containing the "correctness" percentage for each answer.
+     * @param $data array of questiondata
+     * @return array "correctness"-percentages of the answers.
+     */
     private function get_percentages_by_response ($data) {
         // This function trys to give a better estimate of the answers "correctness" instead of only using passed/failed.
         // It first trys to rebuild all possible answers.
@@ -360,7 +476,8 @@ class scodata_provider {
         $correctresponse = $data['correct_response'];
         $allanswers = array_unique(array_merge($correctresponse, $allanswers));
         foreach ($data['learner_responses'] as $responses) {
-            // If the response is not 'correct' or 'false' we simply look at all answers and wether they should've been checked or not.
+            // If the response is not strictly correct of false but on a spectrum...
+            // we look at all subanswers and whether they were correctly marked as true or false.
             // We can then calculate the amount of errors made and use that as our errorpercentile.
             $errors = count(array_merge(array_diff($responses, $correctresponse), array_diff($correctresponse, $responses)));
             $percentage = 1 - ((double)$errors / (double)count($allanswers));
@@ -369,6 +486,10 @@ class scodata_provider {
         return $percentages;
     }
 
+    /**
+     * Loads all SCO users from the database into the cache.
+     * @throws \dml_exception
+     */
     private function load_all_users () {
         global $DB;
         // Fetch the userids of this sco from the database.
@@ -376,6 +497,10 @@ class scodata_provider {
         $this->userids = $DB->get_fieldset_sql($sql, array($this->scoid));
     }
 
+    /**
+     * Loads all best attempts from all users into the cache;
+     * @throws \dml_exception
+     */
     private function load_user_attempts() {
         // If users aren't loaded yet, load userids into the $userids array.
         if (is_null($this->userids)) {
@@ -387,6 +512,10 @@ class scodata_provider {
         }
     }
 
+    /**
+     * Loads the best attempt for a given user into the cache.
+     * @param $userid
+     */
     private function load_best_attempt_for_user ($userid) {
         // The function sorm_get_tracks returns all attempts a user has in this sco.
         // This is called a track because it represents a single tracking instance.
@@ -410,9 +539,13 @@ class scodata_provider {
         }
     }
 
-    /*
+    /**
      * Writes the provided value to a number of keys in an associative array, creating non-existent sub-arrays on the way.
      * If operation is set to "push" instead of "write", the value will be pushed into an array instead.
+     * @param $array array to push to
+     * @param $keychain array of keys to write to
+     * @param $value mixed value to write
+     * @param string $operation String operation identifier.
      */
     private static function write_to_keychain(&$array, $keychain, $value, $operation = "write") {
         $key = array_shift($keychain);

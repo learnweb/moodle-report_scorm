@@ -1,3 +1,26 @@
+{{!
+    @template scormreport_question/dashboard
+
+    Renders the questionreports dashboard consisting of two circles showing average performance and projected percent of students passing the class.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * averagepercentage - the average percentage to be used in the circles text.
+    * roundedaverage - the average percentage rounded to an integer.
+
+    Example context (json):
+    {
+        "averagepercentage": 70
+    }
+
+}}
+
+
 <h2>Dashboard</h2>
 <div class="scormreport_question_dashboard_container">
     <div id="scormreport_question_averagecontainer" class="scormreport_question_dashboard_container_inner">

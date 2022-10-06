@@ -38,7 +38,6 @@ use core\chart_series;
  * @copyright  2021 Robin Tschudi
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 class report extends \mod_scorm\report {
 
     /**
@@ -72,7 +71,11 @@ class report extends \mod_scorm\report {
         // To have the text fit inside the final html elements the average is rounded to two decimal points.
         $roundedaverage = max(0, min(100, round($average)));
         // Render the dashboard. The dashboard displays average grade aswell as the projected passingquota.
-        echo $OUTPUT->render_from_template('scormreport_question/report', ['averagepercentage' => $average, 'roundedaverage' => $roundedaverage, 'showdashboard' => $showdashboard]);
+        echo $OUTPUT->render_from_template('scormreport_question/report', [
+            'averagepercentage' => $average,
+            'roundedaverage' => $roundedaverage,
+            'showdashboard' => $showdashboard
+        ]);
         // Load the javascript required to calculate new passingquotas based on new minnimum scores.
         $PAGE->requires->js_call_amd('scormreport_question/dashboard_passingquota', 'init', array($scoredata));
         // Load the javascript that injects the visualized results for the questions.

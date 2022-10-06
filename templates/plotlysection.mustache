@@ -1,3 +1,27 @@
+{{!
+    @template scormreport_question/plotlysection
+
+    Creates a section with a title and an empty div to be appended by the plotly js library.
+    Also shows the id as a tooltip on hover.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Contect variables required for this template:
+    * title - The title to be shown
+    * id - The full id of the associated DB object
+
+    Example context (json):
+    {
+        "title": "A wonderfull title"
+    }
+
+}}
+
+
 <div id="scormreport_question_sectionwrapper_{{id}}">
     <div class="scormreport_question_title">
         <h2 title="{{id}}">{{title}}</h2>
